@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Issue Tracker</title>
+   <style>
+    body {
+        font-family: Arial;
+        margin: 0;
+        padding: 0;
+        background: url('/static/images/bg.jpg') no-repeat center center/cover;
+        position: relative;
+    }
+
+   
+    body::before {
+        content: "";
+        position: fixed; /* changed from absolute */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(6px);
+        z-index: -1; 
+    }
+
+    
+    .header {
+        position: relative;
+        z-index: 10; 
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .header h2 {
+        margin: 0;
+    }
+
+    .header a {
+        text-decoration: none;
+        background: #ff4d4d;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        transition: 0.3s;
+    }
+
+    .header a:hover {
+        background: #cc0000;
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        padding: 20px;
+    }
+
+    .form-card, .search-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 10px;
+        width: 400px;
+        margin: 20px auto;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    .form-card:hover, .search-card:hover {
+        transform: scale(1.02);
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background: #4facfe;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #2b8cff;
+    }
+
+    .card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        padding: 15px;
+        margin: 15px auto;
+        width: 500px;
+        border-radius: 10px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .actions a {
+        margin-right: 15px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    .actions a:hover {
+        opacity: 0.7;
+    }
+
+    .file-link a {
+        text-decoration: none;
+        color: #333;
+    }
+
+    .file-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h2>Welcome, {{ request.user.username }}</h2>
+   <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
+
+<div class="container">
+
+  
+    <div class="search-card">
+        <form method="GET">
+            <input type="text" name="q" placeholder="Search issues...">
+            <button type="submit"><i class="fas fa-search"></i> Search</button>
+        </form>
+    </div>
+
+  
+    <div class="form-card">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <input type="text" name="title" placeholder="Title" required>
+            <textarea name="description" placeholder="Description" required></textarea>
+
+            <input type="file" name="file">
+
+           <button type="submit"><i class="fas fa-plus"></i> Submit Issue</button>
+        </form>
+    </div>
+
+    
+    <div class="issues">
+        {% for issue in issues %}
+        <div class="card">
+            <h3>{{ issue.title }}</h3>
+            <p>{{ issue.description }}</p>
+
+            <p>
+                Status:
+                {% if issue.status == 'pending' %}
+                    <span style="color: orange;">Pending</span>
+                {% elif issue.status == 'in_progress' %}
+                    <span style="color: blue;">In Progress</span>
+                {% else %}
+                    <span style="color: green;">Resolved</span>
+                {% endif %}
+            </p>
+
+            {% if issue.file %}
+                <div class="file-link">
+                 <a href="{{ issue.file.url }}" target="_blank">
+                 <i class="fas fa-paperclip"></i> View File
+                </a>
+                </div>
+            {% endif %}
+
+           <div class="actions">
+    <a href="{% url 'edit_issue' issue.id %}">
+        <i class="fas fa-edit"></i> Edit
+    </a>
+    <a href="{% url 'delete_issue' issue.id %}">
+        <i class="fas fa-trash"></i> Delete
+    </a>
+</div>
+        {% empty %}
+            <p style="text-align:center; color:white;">No issues yet.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+</body>
+</html>

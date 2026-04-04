@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Issues</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f7fb;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-links a {
+            margin-left: 12px;
+            text-decoration: none;
+            color: #4facfe;
+            font-weight: bold;
+        }
+
+        .wrapper {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        .alert {
+            background: #d4edda;
+            color: #155724;
+            border-left: 6px solid #28a745;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .fade-out {
+            animation: fadeOut 0.6s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        .search-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .search-card input {
+            width: 75%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .search-card button {
+            padding: 10px 16px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .actions a {
+            margin-right: 15px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .status-pending { color: orange; font-weight: bold; }
+        .status-progress { color: blue; font-weight: bold; }
+        .status-resolved { color: green; font-weight: bold; }
+
+        .location {
+            color: #555;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .file-link a {
+            text-decoration: none;
+            color: #4facfe;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>My Reported Issues</h2>
+        <div class="nav-links">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'report_issue' %}">Report Issue</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="search-card">
+            <form method="GET">
+                <input type="text" name="q" placeholder="Search issues...">
+                <button type="submit"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </div>
+
+        {% for issue in issues %}
+        <div class="card">
+            <h3>{{ issue.title }}</h3>
+            <p>{{ issue.description }}</p>
+
+            <p class="location">
+                <i class="fas fa-map-marker-alt"></i> Location: {{ issue.location }}
+            </p>
+
+            <p>
+                Status:
+                {% if issue.status == 'pending' %}
+                    <span class="status-pending">Pending</span>
+                {% elif issue.status == 'in_progress' %}
+                    <span class="status-progress">In Progress</span>
+                {% elif issue.status == 'resolved' %}
+                    <span class="status-resolved">Resolved</span>
+                {% else %}
+                    <span>{{ issue.status }}</span>
+                {% endif %}
+            </p>
+
+            {% if issue.file %}
+                <p class="file-link">
+                    <a href="{{ issue.file.url }}" target="_blank">
+                        <i class="fas fa-paperclip"></i> View File
+                    </a>
+                </p>
+            {% endif %}
+
+            <div class="actions">
+                <a href="{% url 'edit_issue' issue.id %}">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'delete_issue' issue.id %}">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p style="text-align:center; color:#666;">No issues reported yet.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.classList.add('fade-out');
+                setTimeout(() => {
+                    alert.remove();
+                }, 600);
+            });
+        }, 3000);
+    </script>
+
+</body>
+</html>
